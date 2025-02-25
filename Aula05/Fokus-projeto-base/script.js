@@ -6,6 +6,9 @@ const banner = document.querySelector('.app__image');
 const titulo = document.querySelector('.app__title');
 const botoes = document.querySelectorAll('.app__card-button');
 const startPauseBt = document.querySelector('#start-pause');
+const iniciarOuPausarBt = document.querySelector('#start-pause span');
+const imgBt = document.querySelector('.app__card-primary-butto-icon');
+const tempoNaTela = document.querySelector('#timer');
 
 const musicaFocoInput = document.querySelector('#alternar-musica');
 // Criação de um objeto nativo do javascript Audio
@@ -16,7 +19,7 @@ const play = new Audio('./sons/play.mp3');
 const pause = new Audio('./sons/pause.mp3');
 
 
-let tempoDecorridoEmSegundos = 5;
+let tempoDecorridoEmSegundos = 1500;
 let intervaloId = null;
 
 musica.loop = true;
@@ -31,6 +34,7 @@ musicaFocoInput.addEventListener('change', () => {
 })
 
 function alterarContexto(contexto) {
+    mostrarTempo();
 
     botoes.forEach(function(contexto) {
         contexto.classList.remove('active');
@@ -47,32 +51,39 @@ function alterarContexto(contexto) {
         case 'descanso-curto':
             titulo.innerHTML = `Que tal dar uma respirada?<br>
                 <strong class="app__title-strong">Faça uma pausa curta!</strong>`
+            break;
         case 'descanso-longo':
             titulo.innerHTML = `Hora de voltar à superfície.<br>
                 <strong class="app__title-strong">Faça uma pausa longa.</strong>`
+            break;
     }
 }
 
 // foi criada uma função dentro de uma constante
 const contagemRegressiva = () => {
     if(tempoDecorridoEmSegundos <= 0) {
-        zerar();
         beep.play();
         alert('Tempo finalizado!');
+        zerar();
         return;
     }
     tempoDecorridoEmSegundos -= 1;
-    console.log('Temporizador: ' + tempoDecorridoEmSegundos);
+    // console.log('Temporizador: ' + tempoDecorridoEmSegundos);
+    mostrarTempo();
 }
 
 function iniciarOuPausar() {
     if(intervaloId){
         zerar();
         pause.play();
+        iniciarOuPausarBt.innerText = 'Começar';
+        imgBt.setAttribute('src', './imagens/play_arrow.png');
         return
     }
     // é utilizado o método setInterval que utiliza dois parametros o método que desa ser executado e o tempo em milissegundos
     intervaloId = setInterval(contagemRegressiva, 1000);
+    iniciarOuPausarBt.innerText = 'Pausar';
+    imgBt.setAttribute('src', './imagens/pause.png');
     play.play();
 }
 
@@ -82,20 +93,32 @@ function zerar() {
     intervaloId = null;
 }
 
+function mostrarTempo() {
+    const tempo = new Date(tempoDecorridoEmSegundos * 1000);
+    // formata o valor para minutos e segundos
+    const tempoFormatado = tempo.toLocaleTimeString('pt-br', {minute:'2-digit', second: '2-digit'});
+    tempoNaTela.innerHTML = `${tempoFormatado}`
+}
+
 // quando a função está armazenada em uma variável não é necessário utilizar () depois da função e a função só pode ser chamada depois da criação da mesma
 startPauseBt.addEventListener("click", iniciarOuPausar);
 
 focoBt.addEventListener("click", function() {
+    tempoDecorridoEmSegundos = 1500;
     alterarContexto('foco');
     focoBt.classList.add('active');
 })
 
 curtoBt.addEventListener("click", function() {
+    tempoDecorridoEmSegundos = 900;
     alterarContexto('descanso-curto');
     curtoBt.classList.add('active');
 })
 
 longoBt.addEventListener("click", function() {
+    tempoDecorridoEmSegundos = 300;
     alterarContexto('descanso-longo');
     longoBt.classList.add('active');
 })
+
+mostrarTempo();
